@@ -8,13 +8,15 @@ width = 800
 height = 600
 cameraX = 0
 cameraY = 0
-cameraZ = 1
+cameraZ = 0.13
 scroll = 0.1
 playing = True
+speed = 300
 walls = True
-wallsX = 2000
-wallsY = 2000
-cellSize = 5
+wallsX = 3000
+wallsY = 3000
+cellRenderSize = 7
+randomForcesRange = 0.1
 
 def circle( x, y, r, color):
     draw_circle( int(( x+cameraX)*cameraZ + width/2), int(( y+cameraY)*cameraZ + height/2), r*cameraZ+1, color)
@@ -29,37 +31,37 @@ def rectangle_lines( x, y, w, h, color):
 types = {
     "red": {
         "relations": {
-            "red": random()*0.04-0.02,
-            "green": random()*0.04-0.02,
-            "blue": random()*0.04-0.02,
-            "white": random()*0.04-0.02,
+            "red": random()*randomForcesRange-randomForcesRange/2,
+            "green": random()*randomForcesRange-randomForcesRange/2,
+            "blue": random()*randomForcesRange-randomForcesRange/2,
+            "white": random()*randomForcesRange-randomForcesRange/2,
         },
         "color": Color( 200, 30, 30, 255)
     },
     "green": {
         "relations": {
-            "red": random()*0.04-0.02,
-            "green": random()*0.04-0.02,
-            "blue": random()*0.04-0.02,
-            "white": random()*0.04-0.02,
+            "red": random()*randomForcesRange-randomForcesRange/2,
+            "green": random()*randomForcesRange-randomForcesRange/2,
+            "blue": random()*randomForcesRange-randomForcesRange/2,
+            "white": random()*randomForcesRange-randomForcesRange/2,
         },
         "color": Color( 50, 200, 50, 255)
     },
     "blue": {
         "relations": {
-            "red": random()*0.04-0.02,
-            "green": random()*0.04-0.02,
-            "blue": random()*0.04-0.02,
-            "white": random()*0.04-0.02,
+            "red": random()*randomForcesRange-randomForcesRange/2,
+            "green": random()*randomForcesRange-randomForcesRange/2,
+            "blue": random()*randomForcesRange-randomForcesRange/2,
+            "white": random()*randomForcesRange-randomForcesRange/2,
         },
         "color": Color( 50, 50, 200, 255)
     },
     "white": {
         "relations": {
-            "red": random()*0.04-0.02,
-            "green": random()*0.04-0.02,
-            "blue": random()*0.04-0.02,
-            "white": random()*0.04-0.02,
+            "red": random()*randomForcesRange-randomForcesRange/2,
+            "green": random()*randomForcesRange-randomForcesRange/2,
+            "blue": random()*randomForcesRange-randomForcesRange/2,
+            "white": random()*randomForcesRange-randomForcesRange/2,
         },
         "color": Color( 200, 200, 200, 255)
     },
@@ -70,7 +72,7 @@ class Dot():
         self.pos = pos
         self.vel = np.array([0, 0])
         self.type = type
-    def update(self, walls, wallsX, wallsY):
+    def update(self, walls, wallsX, wallsY, deltaTime):
         if walls:
             if self.pos[0] > wallsX or self.pos[0] < -wallsX :
                 self.pos -= 20 * (self.pos[0]-wallsX) / abs(self.pos[0]-wallsX)
@@ -78,12 +80,12 @@ class Dot():
             if self.pos[1] > wallsY or self.pos[1] < -wallsY :
                 self.pos -= 20 * (self.pos[1]-wallsY) / abs(self.pos[1]-wallsY)
                 self.vel[1] *= -1
-        self.pos += self.vel
+        self.pos += self.vel * deltaTime * speed
     def render(self):
-        circle(self.pos[0], self.pos[1], cellSize, types[self.type]["color"])
+        circle(self.pos[0], self.pos[1], cellRenderSize, types[self.type]["color"])
 
 dots = []
-for i in range(60):
+for i in range(150):
     dots.append(Dot(
         np.array([
             random()*wallsX*2-wallsX,
@@ -96,7 +98,7 @@ for i in range(60):
 init_window( width, height, "forces")
 set_target_fps(60)
 while not window_should_close():
-
+    dt = get_frame_time()
     #pausing
     if is_key_pressed(KEY_SPACE):
         playing = not playing
@@ -121,12 +123,12 @@ while not window_should_close():
     #simulation
     if playing:
         for dot in dots:
-            dot.update( walls, wallsX, wallsY)
+            dot.update( walls, wallsX, wallsY, dt)
             for dot2 in dots:
                 d = sqrt( (dot.pos[0]-dot2.pos[0])**2 + (dot.pos[1]-dot2.pos[1])**2 )
-                if d > cellSize:
+                if d > 10 and d < 600:
                     G = types[dot.type]["relations"][dot2.type]
-                    force = G / (d**2)
+                    force = G / d
                     vector = dot.pos - dot2.pos
                     vector = vector / np.linalg.norm(vector)
                     vector = vector * G
