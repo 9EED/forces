@@ -11,12 +11,12 @@ cameraY = 0
 cameraZ = 0.13
 scroll = 0.1
 playing = True
-speed = 300
+speed = 500
 walls = True
 wallsX = 3000
 wallsY = 3000
-cellRenderSize = 7
-randomForcesRange = 0.1
+cellRenderSize = 20
+randomForcesRange = 0.15
 
 def circle( x, y, r, color):
     draw_circle( int(( x+cameraX)*cameraZ + width/2), int(( y+cameraY)*cameraZ + height/2), r*cameraZ+1, color)
@@ -126,7 +126,7 @@ while not window_should_close():
             dot.update( walls, wallsX, wallsY, dt)
             for dot2 in dots:
                 d = sqrt( (dot.pos[0]-dot2.pos[0])**2 + (dot.pos[1]-dot2.pos[1])**2 )
-                if d > 10 and d < 600:
+                if d > 10 and d < 500:
                     G = types[dot.type]["relations"][dot2.type]
                     force = G / d
                     vector = dot.pos - dot2.pos
